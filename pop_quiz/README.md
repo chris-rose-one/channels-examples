@@ -1,5 +1,5 @@
 # Pop Quiz
-
+## Description
 This is a polling app with a dynamically created and updated bar graph as representation and a status panel to guide you every step of the way.
 It leverages the batteries included in the <a href="https://www.djangoproject.com">Django</a> web framework to build a database backend and provide a CRUD (create, read, update, delete) administration system.
 
@@ -37,14 +37,28 @@ It is possible to queue up a number of polls ahead of time. A pre save signal wo
 
 A server side session store keeps poll users honest.
 
-Repository settings are configured ready to be deployed to Heroku and uses two main processes
+Repository settings are configured for local deployment and using two main processes
 - Daphne http/websocket server
 - Django worker
 
-And requires the support of
+It requires the support of
 - Redis
 
-As time elapses, polls go through a series of changes; polls close, they end and new ones begin. 
+As time elapses, polls go through a series of changes; polls close, they end and new ones begin.
 these changes rely on time fields within the model and a third process to assess if one has come to pass before messaging these changes in state to clients.
 It is required to automate transitions in the queue but this process is optional.
 - fluidpoll management command
+
+### Manual Installation Local
+Make a new vitualenv for the project, and run:</br>
+- pip install -r requirements.txt</br>
+- python manage.py makemigrations polls</br>
+- python manage.py migrate
+
+### Usage
+Make yourself a super user account:</br>
+- python manage.py createsuperuser
+Then, login to http//localhost:8000/admin and create a few poll Questions
+
+run at least the worker and web processes found in the Procfile, or python manage.py runserver</br>
+run a fluidpoll process found in the Procfile to give the users real time updates on poll state
