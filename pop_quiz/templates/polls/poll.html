@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% block title %}<title>Pop Quiz</title>{% endblock %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/css/poll_style.css' %}" />
+<script src="{%static 'polls/js/d3.min.js' %}"></script>
+<script src="{% static 'js/reconnecting-websocket.min.js' %}"></script>
+<script src="{% static 'polls/js/poll_ui.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="col-xs-12 col-xs-offset-0 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+			{% if error_message %}
+			<h2>Pop Quiz</h2>
+			{% elif question %}
+			<h2>{{ question.question_text }}</h2>
+			{% endif %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 col-xs-offset-0 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+			<div class="panel panel-default">
+				<!--there are many different states in a poll-->
+				{% if error_message %}
+				<div class="panel-heading">
+					<h3 class="panel-title">the polls have closed</h3>
+				</div>
+				<div class="panel-body">There isn't a poll running at the moment!</div>
+				{% elif question %}
+				{% if not question.is_open %}
+				<div class="panel-heading">
+					<h3 class="panel-title">voting has closed</h3>
+				</div>
+				<div class="panel-body">voting has closed for the current poll.</br>a fresh poll will open soon.</div>
+				{% elif question.is_open %}
+				{% if  question.one_vote_only and not has_voted %}
+				<div class="panel-heading">
+					<h3 class="panel-title">one vote only</h3>
+				</div>
+				<div class="panel-body">votes are limited to one per person.</div>
+				{% elif question.one_vote_only and has_voted %}
+				<div class="panel-heading">
+					<h3 class="panel-title">one vote only</h3>
+				</div>
+				<div class="panel-body">you have voted. try the undo button.</div>
+				{% else %}
+				<div class="panel-heading">
+					<h3 class="panel-title">the polls are open</h3>
+				</div>
+				<div class="panel-body">vote as many times as you like.</div>
+				{% endif %}
+				{% endif %}
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 col-xs-offset-0 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+			<svg class="chart" xmlns="http://www.w3.org/2000/svg" version="1.1" preserveAspectRatio="xMinYMin meet"></svg>
+			{% if question %}
+			<script>
+				{% autoescape off %}
+				var data = {{ choices }};
+				one_vote_only = {{ question.one_vote_only|yesno:"true,false" }};
+				has_voted = {{ has_voted|yesno:"true,false" }};
+				vote_limit = {{ question.vote_limit }};
+				poll_status = {{ question.is_open|yesno:"true,false" }};
+				question_id = {{ question.id }};
+				render_poll(data);
+				{% endautoescape %}
+			</script>
+			{% endif %}
+		</div>
+	</div>
+	</br>
+	<div class="row">
+		<div class="col-xs-8 col-xs-offset-2 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+			<button type="button" class="btn btn-default btn-block{% if not question.one_vote_only or not question.is_open %} active disabled hidden {% elif not has_voted and question.is_open %} active disabled {% endif %}">
+				Undo my precious vote
+			</button>
+			{% if question %}
+			<script>button();</script>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}
